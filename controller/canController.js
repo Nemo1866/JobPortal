@@ -161,6 +161,20 @@ accessToken:accessToken
         })
         
 
+    },login:async(req,res)=>{
+        res.json({msg:"login Sucessfully"})
+    },logout:async(req,res)=>{
+        req.logout(err=>{
+            if(err){
+                res.json({
+                    msg:err
+                })
+            }else{
+                res.json({
+                    msg:"Sucessfully Logout"
+                })
+            }
+        })
     }
 }
 
