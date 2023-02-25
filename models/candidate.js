@@ -2,10 +2,10 @@ const bcrypt=require("bcrypt")
 
 module.exports=(sequelize,DataTypes)=>{
 let Candidate=sequelize.define("candidate",{
-    first_name:{
+    firstName:{
         type:DataTypes.STRING,
         allowNull:false
-    },last_name:{
+    },lastName:{
         type:DataTypes.STRING,
         allowNull:false
     },email:{

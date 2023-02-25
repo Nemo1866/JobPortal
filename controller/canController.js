@@ -1,13 +1,13 @@
 require("dotenv").config()
-const {Candidate}=require("../connection")
+const {Candidate, jobsList, appliedJobs, recruiter, sequelize}=require("../connection")
 const joi=require("joi")
 const nodemailer=require("nodemailer")
 const jwt=require("jsonwebtoken")
 const {google}=require("googleapis")
 
 const schema=joi.object({
-    first_name:joi.string().required(),
-    last_name:joi.string().required(),
+    firstName:joi.string().required(),
+    lastName:joi.string().required(),
     email:joi.string().required(),
     password:joi.string().pattern(new RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$')).required().messages({
         'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and be at least 8 characters long'
@@ -53,7 +53,7 @@ module.exports={
 
     createUser:async(req,res)=>{
         try {
-            const {first_name,last_name,email,password}=req.body
+            const {firstName,lastName,email,password}=req.body
 
         const done=await schema.validateAsync(req.body)
        
@@ -68,9 +68,9 @@ module.exports={
        
      
         
-    let result=await Candidate.create({first_name,last_name,email,password})
+    let result=await Candidate.create({firstName,lastName,email,password})
   if(result){
-    mail("Welcome To MyJobs","Dear Candidate,Thanks for joining MYJobs",`Welcome ${first_name} ${last_name} to our website`,email)
+    mail("Welcome To MyJobs","Dear Candidate,Thanks for joining MYJobs",`Welcome ${firstName} ${lastName} to our website`,email)
     res.json({
         message:"Saved in the database"
     })
@@ -88,7 +88,7 @@ module.exports={
         
 
     },
-    resetPassword:async(req,res)=>{
+    resetPasswordForCandidate:async(req,res)=>{
         const {email}=req.body
         const candidate=await Candidate.findOne({where:{email}})
         if(!candidate){
@@ -96,6 +96,7 @@ module.exports={
                 msg:"Email Account Doesn't Exist"
             })
         }else{
+            
             let secret=candidate.password + "THis is our little Secret."
             let payload={
                 id:candidate.id,
@@ -137,7 +138,7 @@ accessToken:accessToken
 
         }
     },
-    resetPasswordBytoken:async(req,res)=>{
+    resetPasswordBytokenForCandidate:async(req,res)=>{
         const {token}=req.params
         const {email,password}=req.body
         const candidate=await Candidate.findOne({where:{email}})
@@ -161,9 +162,10 @@ accessToken:accessToken
         })
         
 
-    },login:async(req,res)=>{
-        res.json({msg:"login Sucessfully"})
-    },logout:async(req,res)=>{
+    },candidateLogin:async(req,res)=>{
+        let jobs=await jobsList.findAll()
+        res.json({msg:jobs})
+    },candidateLogout:async(req,res)=>{
         req.logout(err=>{
             if(err){
                 res.json({
@@ -175,6 +177,43 @@ accessToken:accessToken
                 })
             }
         })
+    },candidateAppliedJobs:async(req,res)=>{
+        let find=await jobsList.findOne({where:{id:req.params.id}})
+        let result=await appliedJobs.create({
+            candidateId:req.user.dataValues.id,
+            jobsListId:req.params.id,
+            recruiterId:find.recruiterId
+
+
+        })
+        if(!result){
+            res.json({msg:"Could not apply for this job "})
+        }else{
+            let candidate=await Candidate.findOne({where:{id:req.user.dataValues.id}})
+            let recruiter1=await recruiter.findOne({where:{id:result.recruiterId}})
+            let jobs=await jobsList.findOne({where:{id:req.params.id}})
+            mail(`Thanks for Applying in our Myjobs Portal`,`Applied For ${jobs.title}`,`Thanks for Applying for the position of ${jobs.title}. I hope that you get selected for this job`,[candidate.email,recruiter1.email])
+
+
+        res.json({
+            msg:"Sucessfully Applied"
+        })
+    }
+    },candidateShowAppliedJobs:async(req,res)=>{
+        // let result=await appliedJobs.findAll({ where:{candidateId:req.user.dataValues.id},order:[["createdAt","DESC"]]});
+        let result= await sequelize.query(`Select title,description,ap.createdAT from appliedjobs ap left join jobslists on ap.jobsListId=jobslists.id where ap.candidateId=${req.user.dataValues.id} order by createdAt desc`)
+     
+       
+        if(result){
+            res.json({result:result })
+        }else{
+            res.json({
+                msg:"You've Not Applied for any jobs"
+            })
+        }
+    },getUser:async(req,res)=>{
+        let candidate=await Candidate.findOne({where:{id:req.params.id},include:jobsList})
+        res.json({candidate:candidate})
     }
 }
 

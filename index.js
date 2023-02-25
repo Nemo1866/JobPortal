@@ -3,11 +3,13 @@ const router = require("./route/router")
 const app=express()
 const passport=require("passport")
 const session=require("express-session")
-const { passportInitializa } = require("./passport/passportConfig")
+const { passportInitializa } = require("./passport/candidateConfig")
+// const {initializingPassport}=require("./passport/recruiterConfig")
 require("./connection")
 
 app.use(express.json())
 passportInitializa(passport)
+// initializingPassport(passport)
 app.use(session({
     secret:"secret",
     saveUninitialized:false,
