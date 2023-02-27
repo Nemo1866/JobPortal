@@ -87,6 +87,10 @@ module.exports={
         }
         
 
+    },welcome:async(req,res)=>{
+        res.json({
+            msg:`Welcome `+req.user.dataValues.firstName
+        })
     },
     resetPasswordForCandidate:async(req,res)=>{
         const {email}=req.body
@@ -162,7 +166,7 @@ accessToken:accessToken
         })
         
 
-    },candidateLogin:async(req,res)=>{
+    },candidategetJobs:async(req,res)=>{
         let jobs=await jobsList.findAll()
         res.json({msg:jobs})
     },candidateLogout:async(req,res)=>{
@@ -211,9 +215,6 @@ accessToken:accessToken
                 msg:"You've Not Applied for any jobs"
             })
         }
-    },getUser:async(req,res)=>{
-        let candidate=await Candidate.findOne({where:{id:req.params.id},include:jobsList})
-        res.json({candidate:candidate})
     }
 }
 

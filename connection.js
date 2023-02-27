@@ -15,6 +15,7 @@ let Candidate=require("./models/candidate")(sequelize,DataTypes)
 let recruiter = require('./models/recruiter')( sequelize, DataTypes)
 let jobsList = require('./models/jobsList')( sequelize, DataTypes)
 let appliedJobs=require("./models/appliedJobs")(sequelize,DataTypes)
+let Admin=require("./models/admin")(sequelize,DataTypes)
 
 
 recruiter.hasMany(jobsList)
@@ -30,5 +31,12 @@ recruiter.belongsToMany(jobsList,{through:appliedJobs})
 
 
 sequelize.sync()
+// .then(()=>{
+//     return Admin.create({firstName:"Ahmed",lastName:"Shaikh",email:"ahmedsagir@nimapinfotech.com",password:"Ahmed@786"})
+// }).then((data)=>{
+//     console.log(data);
+// }).catch((error)=>{
+//     console.log(error);
+// })
 
-module.exports={Candidate,recruiter,jobsList,appliedJobs,sequelize}
+module.exports={Candidate,recruiter,jobsList,appliedJobs,sequelize,Admin}
