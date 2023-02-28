@@ -82,7 +82,7 @@ module.exports={
 
             
         } catch (error) {
-            console.log(error);
+            res.send("You Need to Provide atleast Eight Character with atleast 1 UpperCase,1 LowerCase,1 Special Character and 1 Numeric Character")
          
         }
         
@@ -93,128 +93,194 @@ module.exports={
         })
     },
     resetPasswordForCandidate:async(req,res)=>{
-        const {email}=req.body
-        const candidate=await Candidate.findOne({where:{email}})
-        if(!candidate){
-            res.json({
-                msg:"Email Account Doesn't Exist"
-            })
-        }else{
-            
-            let secret=candidate.password + "THis is our little Secret."
-            let payload={
-                id:candidate.id,
-                email:candidate.email
-            }
-            let token=jwt.sign(payload,secret,{expiresIn:"15m"})
-            let accessToken=await oAuthGoogleClient.getAccessToken()
-
-            let transport=nodemailer.createTransport({
-                service:"gmail",
-                auth:{
-type:"OAuth2",
-user:process.env.USER,
-clientId:process.env.CLIENT_ID,
-clientSecret:process.env.CLIENT_SECRET,
-refreshToken:process.env.REFRESH_TOKEN,
-accessToken:accessToken
-                }
-            })
-            let mailOptions={
-                from:`OTP FOR Changing Password  <${process.env.USER}>`,
-                to:candidate.email,
-                subject:"One Time Password",
-               
-                text:"Checking ",
-                html:`http://localhost:3000/resetpassword/${token}`
-            }
-            transport.sendMail(mailOptions,(err)=>{
-                if(err){
-                    res.json({
-                        msg:"Some Error Occured"+err
-                    })
-                }else{
-                    res.json({
-                        msg:"Sucessfully Sent to your email"
-                    })
-                }
-            })
-
-        }
-    },
-    resetPasswordBytokenForCandidate:async(req,res)=>{
-        const {token}=req.params
-        const {email,password}=req.body
-        const candidate=await Candidate.findOne({where:{email}})
-
-        const secret=candidate.password + "THis is our little Secret."
-        jwt.verify(token,secret,async (err)=>{
-            if(err){
+        try {
+            const {email}=req.body
+            const candidate=await Candidate.findOne({where:{email}})
+            if(!candidate){
                 res.json({
-                    msg:"invalid Token"
+                    msg:"Email Account Doesn't Exist"
                 })
             }else{
-                let candidate=await Candidate.update({password:password},{where:{
-                    email:email
-                }})
-                let candidate2=await Candidate.findOne({where:{email}})
-                mail("Updated Your Password",`Your Password Has been Updated.`,`Hello,${candidate2.first_name} ${candidate2.last_name} Thanks for choosing MyJobs,Your Password Has been Updated.`,email)
-                res.json({
-                    msg:"Sucessfully Updated the Password"
+                
+                let secret=candidate.password + "THis is our little Secret."
+                let payload={
+                    id:candidate.id,
+                    email:candidate.email
+                }
+                let token=jwt.sign(payload,secret,{expiresIn:"15m"})
+                let accessToken=await oAuthGoogleClient.getAccessToken()
+    
+                let transport=nodemailer.createTransport({
+                    service:"gmail",
+                    auth:{
+    type:"OAuth2",
+    user:process.env.USER,
+    clientId:process.env.CLIENT_ID,
+    clientSecret:process.env.CLIENT_SECRET,
+    refreshToken:process.env.REFRESH_TOKEN,
+    accessToken:accessToken
+                    }
                 })
+                let mailOptions={
+                    from:`OTP FOR Changing Password  <${process.env.USER}>`,
+                    to:candidate.email,
+                    subject:"One Time Password",
+                   
+                    text:"Checking ",
+                    html:`http://localhost:3000/candidate/resetpassword/${token}`
+                }
+                transport.sendMail(mailOptions,(err)=>{
+                    if(err){
+                        res.json({
+                            msg:"Some Error Occured"+err
+                        })
+                    }else{
+                        res.json({
+                            msg:"Sucessfully Sent to your email"
+                        })
+                    }
+                })
+    
             }
-        })
+            
+        } catch (error) {
+            res.send(error)
+        }
+       
+    },
+    resetPasswordBytokenForCandidate:async(req,res)=>{
+        try {
+            const {token}=req.params
+            const {email,password}=req.body
+            const candidate=await Candidate.findOne({where:{email}})
+    
+            const secret=candidate.password + "THis is our little Secret."
+            jwt.verify(token,secret,async (err)=>{
+                if(err){
+                    res.json({
+                        msg:"invalid Token"
+                    })
+                }else{
+                    let candidate=await Candidate.update({password:password},{where:{
+                        email:email
+                    }})
+                    let candidate2=await Candidate.findOne({where:{email}})
+                    mail("Updated Your Password",`Your Password Has been Updated.`,`Hello,${candidate2.first_name} ${candidate2.last_name} Thanks for choosing MyJobs,Your Password Has been Updated.`,email)
+                    res.json({
+                        msg:"Sucessfully Updated the Password"
+                    })
+                }
+            })
+            
+        } catch (error) {
+            res.send(error)
+        }
+       
         
 
     },candidategetJobs:async(req,res)=>{
-        let jobs=await jobsList.findAll()
-        res.json({msg:jobs})
-    },candidateLogout:async(req,res)=>{
-        req.logout(err=>{
-            if(err){
-                res.json({
-                    msg:err
-                })
-            }else{
-                res.json({
-                    msg:"Sucessfully Logout"
-                })
+        try {
+            const pageAsNumber = Number.parseInt(req.query.page)
+            const sizeAsNumber = Number.parseInt(req.query.size)
+    
+            let page = 0
+            if(typeof Number(pageAsNumber) && pageAsNumber > 0){
+              page = pageAsNumber
             }
-        })
-    },candidateAppliedJobs:async(req,res)=>{
-        let find=await jobsList.findOne({where:{id:req.params.id}})
-        let result=await appliedJobs.create({
-            candidateId:req.user.dataValues.id,
-            jobsListId:req.params.id,
-            recruiterId:find.recruiterId
-
-
-        })
-        if(!result){
-            res.json({msg:"Could not apply for this job "})
-        }else{
-            let candidate=await Candidate.findOne({where:{id:req.user.dataValues.id}})
-            let recruiter1=await recruiter.findOne({where:{id:result.recruiterId}})
-            let jobs=await jobsList.findOne({where:{id:req.params.id}})
-            mail(`Thanks for Applying in our Myjobs Portal`,`Applied For ${jobs.title}`,`Thanks for Applying for the position of ${jobs.title}. I hope that you get selected for this job`,[candidate.email,recruiter1.email])
-
-
-        res.json({
-            msg:"Sucessfully Applied"
-        })
-    }
-    },candidateShowAppliedJobs:async(req,res)=>{
-        // let result=await appliedJobs.findAll({ where:{candidateId:req.user.dataValues.id},order:[["createdAt","DESC"]]});
-        let result= await sequelize.query(`Select title,description,ap.createdAT from appliedjobs ap left join jobslists on ap.jobsListId=jobslists.id where ap.candidateId=${req.user.dataValues.id} order by createdAt desc`)
-     
+    
+            let size = 10
+            if(typeof Number(sizeAsNumber) && sizeAsNumber > 0 && sizeAsNumber < 10){
+              size = sizeAsNumber
+            }
+            let jobs=await jobsList.findAndCountAll({limit:size,offset:page*size})
+            res.json({msg:jobs,totalPages:Math.ceil(jobs.count/size)})
+            
+        } catch (error) {
+            res.send(error)
+            
+        }
+        
+      
+    },candidateLogout:async(req,res)=>{
+        try {
+            req.logout(err=>{
+                if(err){
+                    res.json({
+                        msg:err
+                    })
+                }else{
+                    res.json({
+                        msg:"Sucessfully Logout"
+                    })
+                }
+            })
+            
+        } catch (error) {
+            res.send(error)
+        }
        
-        if(result){
-            res.json({result:result })
-        }else{
+    },candidateAppliedJobs:async(req,res)=>{
+        try {
+            let find=await jobsList.findOne({where:{id:req.params.id}})
+            let result=await appliedJobs.create({
+                candidateId:req.user.dataValues.id,
+                jobsListId:req.params.id,
+                recruiterId:find.recruiterId
+    
+    
+            })
+            if(!result){
+                res.json({msg:"Could not apply for this job "})
+            }else{
+                let candidate=await Candidate.findOne({where:{id:req.user.dataValues.id}})
+                let recruiter1=await recruiter.findOne({where:{id:result.recruiterId}})
+                let jobs=await jobsList.findOne({where:{id:req.params.id}})
+                mail(`Thanks for Applying in our Myjobs Portal`,`Applied For ${jobs.title}`,`Thanks for Applying for the position of ${jobs.title}. I hope that you get selected for this job`,[candidate.email,recruiter1.email])
+    
+    
             res.json({
-                msg:"You've Not Applied for any jobs"
+                msg:"Sucessfully Applied"
             })
         }
+        } catch (error) {
+            res.send(error)
+        }
+       
+    },candidateShowAppliedJobs:async(req,res)=>{
+        try {
+            let pageNumber=Number.parseInt(req.query.page)
+            let sizeNumber=Number.parseInt(req.query.size)
+            let page=0
+           
+
+            if(typeof Number(pageNumber)&& (pageNumber)>0){
+                page=pageNumber
+            }
+
+            let size=10
+
+            if(typeof Number(sizeNumber) && (sizeNumber)>0 && (sizeNumber)<10){
+                size=sizeNumber
+            }
+          
+            let result= await sequelize.query(`Select title,description,ap.createdAT from appliedjobs ap left join jobslists on ap.jobsListId=jobslists.id where ap.candidateId=${req.user.dataValues.id} order by createdAt desc limit ${size} offset ${page*size}`)
+     
+       
+            if(result){
+                let totalRecords=result.length;
+                res.json({result:result,totalPages:Math.ceil(totalRecords/size) })
+            }else{
+                res.json({
+                    msg:"You've Not Applied for any jobs"
+                })
+            }
+            
+        } catch (error) {
+            res.send(error)
+
+        }
+        // let result=await appliedJobs.findAll({ where:{candidateId:req.user.dataValues.id},order:[["createdAt","DESC"]]});
+      
     }
 }
 

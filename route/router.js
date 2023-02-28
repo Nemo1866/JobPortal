@@ -3,26 +3,26 @@ const {recruiterLogin,recruiterLogout,adminRecruiter,jobAdd, resetPasswordForRec
 const passport=require("passport")
 // const { isAuthenticated } = require("../passport/recruiterConfig")
 const { isAuthenticatedRecruiter, isAuthenticatedCandidate,isAuthenticatedAdmin } = require("../passport/candidateConfig")
-const { deleteRecruiter, updateRecruiter, deleteJob } = require("../controller/adminController")
+const { deleteRecruiter, updateRecruiter, deleteJob, allJobs, allRecruiters, allCandidates, candidateJobs, removeCandidate, exportAll } = require("../controller/adminController")
 
 
 const router=require("express").Router()
 
 
 //For Candidates
-router.post("/register",createUser)
-router.post("/resetpassword",resetPasswordForCandidate)
+router.post("/candidate/register",createUser)
+router.post("/candidate/resetpassword",resetPasswordForCandidate)
 
-router.post("/resetpassword/:token",resetPasswordBytokenForCandidate)
+router.post("/candidate/resetpassword/:token",resetPasswordBytokenForCandidate)
 
 // router.post("/candidate/login",passport.authenticate("local"),candidateLogin)
 router.get("/candidate/jobs",isAuthenticatedCandidate,candidategetJobs)
 
-router.get("/logout",candidateLogout)
+router.get("/candidate/logout",candidateLogout)
 
-router.get("/candidate/appliedjobs/:id",isAuthenticatedCandidate,candidateAppliedJobs)
+router.get("/candidate/applyjob/:id",isAuthenticatedCandidate,candidateAppliedJobs)
 
-router.get("/candidate/showapplies",isAuthenticatedCandidate,candidateShowAppliedJobs)
+router.get("/candidate/showapplied",isAuthenticatedCandidate,candidateShowAppliedJobs)
 
 // router.get("/getusers/:id",isAuthenticated,getUser)
 
@@ -32,7 +32,7 @@ router.get("/candidate/showapplies",isAuthenticatedCandidate,candidateShowApplie
 // router.post("/recruiter/login",passport.authenticate("local"),recruiterLogin)
 router.post("/recruiter/logout",recruiterLogout)
 
-router.post("/recruiter/jobadd",isAuthenticatedRecruiter,jobAdd)
+router.post("/recruiter/addjob",isAuthenticatedRecruiter,jobAdd)
 router.post("/recruiter/resetpassword",resetPasswordForRecruiter)
 router.post("/recruiter/resetpassword/:token",resetPasswordBytokenForRecruiter)
 router.post("/recruiter/viewjobs",isAuthenticatedRecruiter,recruiterViewJobs)
@@ -46,7 +46,14 @@ router.post("/login",passport.authenticate("local"),welcome)
 router.post("/admin/recruiter/register",isAuthenticatedAdmin,adminRecruiter)
 router.get("/admin/delete/recruiter/:id",isAuthenticatedAdmin,deleteRecruiter)
 router.post("/admin/update/recruiter/:id",isAuthenticatedAdmin,updateRecruiter)
-router.post("/admin/deletejob/:id",isAuthenticatedAdmin,deleteJob)
+router.get("/admin/deletejob/:id",isAuthenticatedAdmin,deleteJob)
+router.get("/admin/jobs",isAuthenticatedAdmin,allJobs)
+router.get("/admin/recruiters",isAuthenticatedAdmin,allRecruiters)
+router.get("/admin/candidates",isAuthenticatedAdmin,allCandidates)
+router.get("/admin/candidate/jobs",isAuthenticatedAdmin,candidateJobs)
+router.get("/admin/delete/candidate/:id",isAuthenticatedAdmin,removeCandidate)
+router.get("/admin/exportall",isAuthenticatedAdmin,exportAll)
+
 
 
 
