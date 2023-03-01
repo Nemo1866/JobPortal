@@ -4,6 +4,7 @@ const joi=require("joi")
 const nodemailer=require("nodemailer")
 const jwt=require("jsonwebtoken")
 const {google}=require("googleapis")
+const { pagination } = require("../pagination")
 
 const schema=joi.object({
     firstName:joi.string().required(),
@@ -182,16 +183,10 @@ module.exports={
         try {
             const pageAsNumber = Number.parseInt(req.query.page)
             const sizeAsNumber = Number.parseInt(req.query.size)
+
+            let{page,size}=pagination(pageAsNumber,sizeAsNumber)
     
-            let page = 0
-            if(typeof Number(pageAsNumber) && pageAsNumber > 0){
-              page = pageAsNumber
-            }
-    
-            let size = 10
-            if(typeof Number(sizeAsNumber) && sizeAsNumber > 0 && sizeAsNumber < 10){
-              size = sizeAsNumber
-            }
+           
             let jobs=await jobsList.findAndCountAll({limit:size,offset:page*size})
             res.json({msg:jobs,totalPages:Math.ceil(jobs.count/size)})
             
@@ -250,18 +245,7 @@ module.exports={
         try {
             let pageNumber=Number.parseInt(req.query.page)
             let sizeNumber=Number.parseInt(req.query.size)
-            let page=0
-           
-
-            if(typeof Number(pageNumber)&& (pageNumber)>0){
-                page=pageNumber
-            }
-
-            let size=10
-
-            if(typeof Number(sizeNumber) && (sizeNumber)>0 && (sizeNumber)<10){
-                size=sizeNumber
-            }
+          let {page,size}=pagination(pageNumber,sizeNumber)
           
             let result= await sequelize.query(`Select title,description,ap.createdAT from appliedjobs ap left join jobslists on ap.jobsListId=jobslists.id where ap.candidateId=${req.user.dataValues.id} order by createdAt desc limit ${size} offset ${page*size}`)
      

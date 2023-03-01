@@ -31,12 +31,5 @@ recruiter.belongsToMany(jobsList,{through:appliedJobs})
 
 
 sequelize.sync()
-// .then(()=>{
-//     return Admin.create({firstName:"Ahmed",lastName:"Shaikh",email:"ahmedsagir@nimapinfotech.com",password:"Ahmed@786"})
-// }).then((data)=>{
-//     console.log(data);
-// }).catch((error)=>{
-//     console.log(error);
-// })
 
 module.exports={Candidate,recruiter,jobsList,appliedJobs,sequelize,Admin}

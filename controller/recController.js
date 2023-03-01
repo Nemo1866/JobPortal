@@ -3,7 +3,8 @@ const nodemailer = require("nodemailer");
 const { google } = require("googleapis");
 const jwt = require("jsonwebtoken");
 
-const joi=require("joi")
+const joi=require("joi");
+const { pagination } = require("../pagination");
 
 const schema=joi.object({
     firstName:joi.string().required(),
@@ -13,6 +14,12 @@ const schema=joi.object({
         'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and be at least 8 characters long'
       })
 })
+const schemaPassword=joi.object({
+  password:joi.string().pattern(new RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$')).required().messages({
+    'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and be at least 8 characters long'
+  })
+})
+
 
 const oAuthGoogleClient = new google.auth.OAuth2(
   process.env.CLIENT_ID,
@@ -60,6 +67,7 @@ module.exports = {
         const {firstName,lastName,email,password}=req.body
 
         const check=await schema.validateAsync(req.body)
+       
       const newRecruiter = await recruiter.create({
        firstName,lastName,email,password
       });
@@ -99,7 +107,7 @@ module.exports = {
   recruiterLogout: (req, res) => {
     req.logout((err) => {
       if (err) res.send("This Didnt Work");
-      else res.send("Get Lost");
+      else res.send("Logout Sucessfully");
     });
   },
   resetPasswordForRecruiter: async (req, res) => {
@@ -167,6 +175,8 @@ module.exports = {
             msg: "invalid Token",
           });
         } else {
+          
+        let check=await schemaPassword.validateAsync({password})
           let recruiterr = await recruiter.update(
             { password: password },
             {
@@ -196,15 +206,7 @@ module.exports = {
         let pageNumber=Number.parseInt(req.query.page)
         let sizeNumber=Number.parseInt(req.query.size)
 
-        let page=0
-        if(typeof Number(pageNumber)&&(pageNumber)>0){
-            page=pageNumber
-        }
-
-        let size=10
-        if(typeof Number(sizeNumber) && (sizeNumber)>0 && sizeNumber<10){
-            size=sizeNumber
-        }
+      let {page,size}=pagination(pageNumber,sizeNumber)
 
       let result = await appliedJobs.findAndCountAll({
         where: { recruiterId: req.user.dataValues.id },

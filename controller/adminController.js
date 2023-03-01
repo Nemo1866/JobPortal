@@ -5,6 +5,7 @@ const {
   appliedJobs,
 } = require("../connection");
 const XLSX = require("xlsx");
+const { pagination } = require("../pagination");
 module.exports = {
   deleteRecruiter: async (req, res) => {
     try {
@@ -54,15 +55,7 @@ module.exports = {
       let pageNumber=Number.parseInt(req.query.page)
       let sizeNumber=Number.parseInt(req.query.size)
 
-      let page=0
-      if(typeof Number(pageNumber)&&(pageNumber)>0){
-          page=pageNumber
-      }
-
-      let size=10
-      if(typeof Number(sizeNumber) && (sizeNumber)>0 && sizeNumber<10){
-          size=sizeNumber
-      }
+     let {page,size}=pagination(pageNumber,sizeNumber)
       let result = await Candidate.findAndCountAll({limit:size,offset:page*size});
 
       if (!result) {
@@ -85,15 +78,7 @@ module.exports = {
       let pageNumber=Number.parseInt(req.query.page)
       let sizeNumber=Number.parseInt(req.query.size)
 
-      let page=0
-      if(typeof Number(pageNumber)&&(pageNumber)>0){
-          page=pageNumber
-      }
-
-      let size=10
-      if(typeof Number(sizeNumber) && (sizeNumber)>0 && sizeNumber<10){
-          size=sizeNumber
-      }
+    let {page,size}=pagination(pageNumber,sizeNumber)
       let result = await recruiter.findAndCountAll({limit:size,offset:page*size});
       if (!result) {
         res.json({
@@ -113,16 +98,7 @@ module.exports = {
     try {
       let pageNumber=Number.parseInt(req.query.page)
       let sizeNumber=Number.parseInt(req.query.size)
-
-      let page=0
-      if(typeof Number(pageNumber)&&(pageNumber)>0){
-          page=pageNumber
-      }
-
-      let size=10
-      if(typeof Number(sizeNumber) && (sizeNumber)>0 && sizeNumber<10){
-          size=sizeNumber
-      }
+let{page,size}= pagination(pageNumber,sizeNumber)
       let result = await jobsList.findAndCountAll({limit:size,offset:page*size});
       if (!result) {
         res.json({
@@ -215,4 +191,17 @@ module.exports = {
 console.log(error);
     }
   },
-};
+  logout:async(req,res)=>{
+    req.logout(err=>{
+      if(err){
+        res.send(err)
+      }else{
+        res.json({
+          msg:"Sucessfully logout"
+        })
+      }
+    })
+      
+    }
+  }
+
