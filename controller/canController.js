@@ -5,6 +5,16 @@ const nodemailer=require("nodemailer")
 const jwt=require("jsonwebtoken")
 const {google}=require("googleapis")
 const { pagination } = require("../pagination")
+const Redis=require("redis")
+const RedisClient=Redis.createClient()
+let defaultValue=3600
+RedisClient.connect()
+RedisClient.on('error',(err)=>{
+    console.log(err);
+})
+RedisClient.on('connect',(err)=>{
+    console.log("Redis Connected");
+})
 
 const schema=joi.object({
     firstName:joi.string().required(),
@@ -189,6 +199,22 @@ module.exports={
            
             let jobs=await jobsList.findAndCountAll({limit:size,offset:page*size})
             res.json({msg:jobs,totalPages:Math.ceil(jobs.count/size)})
+            // console.log("check 1");
+            // let result=await RedisClient.GET('jobs')
+            // console.log("check 2");
+            // if(result!=null){
+                
+            //     console.log("Check 3");
+            //   res.json(JSON.parse(result))
+            // }else{
+            //     console.log("else CHeck");
+            //     let jobs=await jobsList.findAll()
+            //     console.log(jobs[0]);
+            //     await RedisClient.SETEX('jobs',defaultValue,JSON.stringify(jobs))
+                
+            //     res.json(jobs)
+            // }
+            // console.log("Check 4");
             
         } catch (error) {
             res.send(error)

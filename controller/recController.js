@@ -100,6 +100,13 @@ module.exports = {
       const user = await recruiter.findOne({ where: { id: recid } });
       const jobAdded = await user.addJobsList(newJob);
       res.send("New Job Added");
+      // for(let i =0;i<=10000;i++){
+      //   await jobsList.create({
+      //     title:`Job Title ${i}`,
+      //     description:`Description ${i}`
+      //   })
+      // }
+      // res.send("Added")
     } catch (error) {
       res.send(error);
     }
