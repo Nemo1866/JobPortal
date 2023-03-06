@@ -14,7 +14,8 @@ const schema=joi.object({
         'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and be at least 8 characters long'
       })
 })
-const schemaPassword=joi.object({
+const schemaReset=joi.object({
+  email:joi.string().required(),
   password:joi.string().pattern(new RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$')).required().messages({
     'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and be at least 8 characters long'
   })
@@ -177,32 +178,37 @@ module.exports = {
 
       const secret = recruiterr.password + "THis is our little Secret.";
       jwt.verify(token, secret, async (err) => {
-        if (err) {
-          res.json({
-            msg: "invalid Token",
-          });
-        } else {
-          
-        let check=await schemaPassword.validateAsync({password})
-          let recruiterr = await recruiter.update(
-            { password: password },
-            {
-              where: {
-                email: email,
-              },
-            }
-          );
-          let recruiter1 = await recruiter.findOne({ where: { email } });
-          mail(
-            "Updated Your Password",
-            `Your Password Has been Updated.`,
-            `Hello,${recruiter1.first_name} ${recruiter1.last_name} Thanks for choosing MyJobs,Your Password Has been Updated.`,
-            email
-          );
-          res.json({
-            msg: "Sucessfully Updated the Password",
-          });
+        try {
+          if (err) {
+            res.json({
+              msg: "invalid Token",
+            });
+          } else {
+            
+          let check=await schemaReset.validateAsync(req.body)
+            let recruiterr = await recruiter.update(
+              { password: password },
+              {
+                where: {
+                  email: email,
+                },
+              }
+            );
+            let recruiter1 = await recruiter.findOne({ where: { email } });
+            mail(
+              "Updated Your Password",
+              `Your Password Has been Updated.`,
+              `Hello,${recruiter1.first_name} ${recruiter1.last_name} Thanks for choosing MyJobs,Your Password Has been Updated.`,
+              email
+            );
+            res.json({
+              msg: "Sucessfully Updated the Password",
+            });
+          }
+        } catch (error) {
+          res.send(error)
         }
+       
       });
     } catch (error) {
       res.send(error);

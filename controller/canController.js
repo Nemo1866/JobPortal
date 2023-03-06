@@ -24,6 +24,13 @@ const schema=joi.object({
         'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and be at least 8 characters long'
       })
 })
+const schemaReset=joi.object({
+    email:joi.string().required(),
+    password:joi.string().pattern(new RegExp('^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$')).required().messages({
+        'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character, and be at least 8 characters long'
+      })
+})
+
 const oAuthGoogleClient=new google.auth.OAuth2(process.env.CLIENT_ID,process.env.CLIENT_SECRET,process.env.REDIRECT_URI)
 oAuthGoogleClient.setCredentials({refresh_token:process.env.REFRESH_TOKEN})
 
@@ -167,20 +174,27 @@ module.exports={
     
             const secret=candidate.password + "THis is our little Secret."
             jwt.verify(token,secret,async (err)=>{
-                if(err){
-                    res.json({
-                        msg:"invalid Token"
-                    })
-                }else{
-                    let candidate=await Candidate.update({password:password},{where:{
-                        email:email
-                    }})
-                    let candidate2=await Candidate.findOne({where:{email}})
-                    mail("Updated Your Password",`Your Password Has been Updated.`,`Hello,${candidate2.first_name} ${candidate2.last_name} Thanks for choosing MyJobs,Your Password Has been Updated.`,email)
-                    res.json({
-                        msg:"Sucessfully Updated the Password"
-                    })
+                try {
+                    if(err){
+                        res.json({
+                            msg:"invalid Token"
+                        })
+                    }else{
+                        let check=await schemaReset.validateAsync(req.body)
+                        let candidate=await Candidate.update({password:password},{where:{
+                            email:email
+                        }})
+                        let candidate2=await Candidate.findOne({where:{email}})
+                        mail("Updated Your Password",`Your Password Has been Updated.`,`Hello,${candidate2.first_name} ${candidate2.last_name} Thanks for choosing MyJobs,Your Password Has been Updated.`,email)
+                        res.json({
+                            msg:"Sucessfully Updated the Password"
+                        })
+                    }
+                    
+                } catch (error) {
+                    res.send(error)
                 }
+               
             })
             
         } catch (error) {
