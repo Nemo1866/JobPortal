@@ -148,6 +148,13 @@ router.get("/candidate/jobs",isAuthenticatedCandidate,candidategetJobs)
  *   get:
  *     tags:
  *       - Candidate
+ *     parameters: 
+ *      - name: page
+ *        in: query
+ *        description: page 
+ *      - name: size
+ *        in: query 
+ *        description: size
  *     summary: Get Jobs Listed By Recruiter.
  *     description: Returns a list of jobs that listed by all the recruiters if the candidate is logged in else it will should "you need to log in".
  *     responses:
@@ -356,6 +363,13 @@ router.get("/recruiter/viewjobs",isAuthenticatedRecruiter,recruiterViewJobs)
  *   get:
  *     tags:
  *       - Recruiter
+ *     parameters: 
+ *      - name: page
+ *        in: query
+ *        description: page 
+ *      - name: size
+ *        in: query 
+ *        description: size
  *     summary: Get Jobs Applied By Candidate.
  *     description: Returns a list of jobs that applied by all the candidates if the recruiter is logged in else it will should "you need to log in".
  *     responses:
@@ -599,6 +613,13 @@ router.get("/admin/jobs",isAuthenticatedAdmin,allJobs)
  *   get:
  *     tags:
  *       - Admin
+ *     parameters: 
+ *      - name: page
+ *        in: query
+ *        description: page 
+ *      - name: size
+ *        in: query 
+ *        description: size
  *     summary: Get All Posted Jobs.
  *     description: Returns a list of Posted Jobs ,posted by all recruiters .if the admin is logged in else it will should "you need to log in".
  *     responses:
@@ -622,6 +643,13 @@ router.get("/admin/recruiters",isAuthenticatedAdmin,allRecruiters)
  *   get:
  *     tags:
  *       - Admin
+ *     parameters: 
+ *      - name: page
+ *        in: query
+ *        description: page 
+ *      - name: size
+ *        in: query 
+ *        description: size
  *     summary: Get All Recruiters.
  *     description: Returns a list of all recruiters .if the admin is logged in else it will should "you need to log in".
  *     responses:
@@ -645,6 +673,13 @@ router.get("/admin/candidates",isAuthenticatedAdmin,allCandidates)
  *   get:
  *     tags:
  *       - Admin
+ *     parameters: 
+ *      - name: page
+ *        in: query
+ *        description: page 
+ *      - name: size
+ *        in: query 
+ *        description: size
  *     summary: Get All Registered Candidates.
  *     description: Returns a list of registered candidates .if the admin is logged in else it will should "you need to log in".
  *     responses:
@@ -668,6 +703,13 @@ router.get("/admin/candidate/jobs",isAuthenticatedAdmin,candidateJobs)
  *   get:
  *     tags:
  *       - Admin
+ *     parameters: 
+ *      - name: page
+ *        in: query
+ *        description: page 
+ *      - name: size
+ *        in: query 
+ *        description: size
  *     summary: Get All Applied Jobs by every Candidates.
  *     description: Returns a list of all applied jobs by every candidates .if the admin is logged in else it will should "you need to log in".
  *     responses:
