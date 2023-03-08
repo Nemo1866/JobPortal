@@ -5,16 +5,16 @@ const nodemailer=require("nodemailer")
 const jwt=require("jsonwebtoken")
 const {google}=require("googleapis")
 const { pagination } = require("../pagination")
-const Redis=require("redis")
-const RedisClient=Redis.createClient()
-let defaultValue=3600
-RedisClient.connect()
-RedisClient.on('error',(err)=>{
-    console.log(err);
-})
-RedisClient.on('connect',(err)=>{
-    console.log("Redis Connected");
-})
+// const Redis=require("redis")
+// const RedisClient=Redis.createClient()
+// let defaultValue=3600
+// RedisClient.connect()
+// RedisClient.on('error',(err)=>{
+//     console.log(err);
+// })
+// RedisClient.on('connect',(err)=>{
+//     console.log("Redis Connected");
+// })
 
 const schema=joi.object({
     firstName:joi.string().required(),
@@ -185,7 +185,7 @@ module.exports={
                             email:email
                         }})
                         let candidate2=await Candidate.findOne({where:{email}})
-                        mail("Updated Your Password",`Your Password Has been Updated.`,`Hello,${candidate2.first_name} ${candidate2.last_name} Thanks for choosing MyJobs,Your Password Has been Updated.`,email)
+                        mail("Updated Your Password",`Your Password Has been Updated.`,`Hello,${candidate2.firstName} ${candidate2.lastName} Thanks for choosing MyJobs,Your Password Has been Updated.`,email)
                         res.json({
                             msg:"Sucessfully Updated the Password"
                         })
